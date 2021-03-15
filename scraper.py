@@ -38,14 +38,13 @@ class Scraper():
                     os.makedirs(dest)
                 assert os.path.isdir(dest)
 
-        print('Image path examples:\n')
+        print('Image path example:\n')
         now = datetime.now().isoformat()
-        for name in self.stations:
-            st = self.stations[name]
-            if self.save_to_s3:
-                print(f"    s3://{self.bucket}/{self.basekey}/{st['base']}/{st['base']}_{_t0.isoformat()}.jpg")
-            else:
-                print(f"    {self.dest}/{st['base']}/{st['base']}_{_t0.isoformat()}.jpg")
+        base = self.stations[stations[0]]['base']
+        if self.save_to_s3:
+            print(f"    s3://{self.bucket}/{self.basekey}/{base}/{base}_{now}.jpg")
+        else:
+            print(f"    {self.dest}/{base}/{base}_{now}.jpg")
         print('\nProgress:\n')
 
 
