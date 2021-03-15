@@ -69,7 +69,7 @@ if __name__ == '__main__':
             if imgBytes != last_saved:
                 print("Saving screen capture")
                 last_saved = imgBytes
-                img.save(f"{outputdir}/Brightwood_{dt.now().isoformat()}.png")
+                img.save(f"{outputdir}/Brightwood_{dt.now().isoformat()}.jpg")
             else:
                 print("Skipping save (image has not changed)")
             os.remove(tmpImgName)
