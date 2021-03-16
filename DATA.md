@@ -11,7 +11,7 @@ Data collection currently comes from three sources: live metadata from all looko
 
 As of the time of this writing (03/16/2021) I have approximately 75,000 images collected from 11 sites. As an example of a typical image, this frame was captured on the `Axis-Alpine` station at Alpine Meadows ski resort in California:
 
-![Alpine Meadows](https://storage-9iudgkuqwurq6.s3-us-west-2.amazonaws.com/AlertWF/Alpine/Alpine_2021-03-14T17%3A10%3A33-07%3A00.jpg)
+![Alpine Meadows](./demo-image.jpg)
 
 Images and site metadata are obtained by periodically querying the public API endpoint that drives the live web streams on the [alertwildfire](http://www.alertwildfire.org/) website.
 Those endpoints are actually just public S3 buckets that are updated regularly. I fetch data from them every 30 seconds, but I believe the actual data is available at a much higher sample rate if it turns out I need higher resolution for whatever reason.
