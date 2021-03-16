@@ -16,6 +16,13 @@ If successful, this approach could dramatically reduce the bandwidth and power c
 
 ## Data
 
+Data handling is described in [DATA.md](./DATA.md).
+
+## Coming soon...
+
+This documentation is a work in progress, and more will be added here as the project progresses.
+
+<!-- 
 ### Data acquisition
 
 Data for this project was obtained by scraping the [alertwildfire live streams](http://www.alertwildfire.org/oregon/index.html?camera=Axis-Brightwood).
@@ -106,3 +113,4 @@ Fog, for example, could potentially be identified through a single metric like i
 But other conditions like nosy birds are more complicated.
 It isn't clear to me yet whether it would be worth training many individual models suited to each case, or one complex neural network that detects all categories of obstructions.
 At this point I am labeling each condition as a separate category, but I may combine them into a single "obscured" vs "clear" flag later on.
+ -->
