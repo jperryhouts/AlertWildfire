@@ -1,11 +1,17 @@
 Data wrangling
 =================
 
+As with the rest of this project, this document is very much a work in progress (not even a draft yet).
+
 ## Extract
 
 Data collection currently comes from three sources: live metadata from all lookout cameras, [live imagery](http://www.alertwildfire.org/) from a subset of active lookout sites, and hourly weather data from [openweathermap.org](https://openweathermap.org).
 
 ### Images and station metadata
+
+As of the time of this writing (03/16/2021) I have approximately 75,000 images collected from 11 sites. As an example of a typical image, this frame was captured on the `Axis-Alpine` station at Alpine Meadows ski resort in California:
+
+![Alpine Meadows](https://storage-9iudgkuqwurq6.s3-us-west-2.amazonaws.com/AlertWF/Alpine/Alpine_2021-03-14T17%3A10%3A33-07%3A00.jpg)
 
 Images and site metadata are obtained by periodically querying the public API endpoint that drives the live web streams on the [alertwildfire](http://www.alertwildfire.org/) website.
 Those endpoints are actually just public S3 buckets that are updated regularly. I fetch data from them every 30 seconds, but I believe the actual data is available at a much higher sample rate if it turns out I need higher resolution for whatever reason.
@@ -18,7 +24,7 @@ I also extract all of the exif data from each image in case I need to query some
 
 Metadata comes from the same S3 endpoint, and is retrieved for all cameras in the same loop that captures image data. It is lightly cleaned up, and then dumped into .csv files for subsequent processing.
 
-All images and metadata are then uploaded to a dedicated S3 bucket.
+All images and metadata are then uploaded to a dedicated S3 bucket. The whole process is contained in the [scraper.py](./scraper.py) script.
 
 ### Weather data
 
