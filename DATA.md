@@ -16,25 +16,55 @@ As of the time of this writing (03/16/2021) I have approximately 75,000 images c
 <!-- ![Alpine Meadows](./demo-image.jpg) -->
 
 Images and site metadata are obtained by periodically querying the public API endpoint that drives the live web streams on the [alertwildfire](http://www.alertwildfire.org/) website.
-Those endpoints are actually just public S3 buckets that are updated regularly. I fetch data from them every 30 seconds, but I believe the actual data is available at a much higher sample rate if it turns out I need higher resolution for whatever reason.
+Those endpoints are actually just public S3 buckets that are updated regularly. I fetch data from all stations once every 15 minutes, although the actual data is available at a much higher sample rate if it turns out I need higher temporal resolution for whatever reason.
 
-The only challenge with the imagery and metadata are that the S3 bucket is configured to only allow access from the [alertwildfire.org](alertwildfire.org) domain.
-It's possible to handle that by just sending a "`Referer: https://www.alertwildfire.org`" header along with each request.
+The only challenge with the imagery and metadata are that the S3 endpoint is configured to only allow access from the [alertwildfire.org](alertwildfire.org) domain.
+That's trivial to handle by just sending a "`Referer: https://www.alertwildfire.org`" header along with each request.
 
-Data retrieval fees become a real consideration if I need to access any of the imagery data, so during the data transformation step I create scaled, lower resolution versions of each image, and save them along side the full resolution version.
-I also extract all of the exif data from each image in case I need to query some other image metadata without downloading the full images.
+Data retrieval fees become a real consideration if I need to access any of my archived imagery data, so during the data transformation step I create a resized version of each image, saved alongside the full resolution images.
+I also extract all of the exif data from each image in case I need to query other metadata without accessing the full image content.
 
-Metadata comes from the same S3 endpoint, and is retrieved for all cameras in the same loop that captures image data. It is lightly cleaned up, and then dumped into .csv files for subsequent processing.
+Station metadata comes from the same S3 bucket, and is fetched in batch for all cameras during the same loop that retrieves images.
+It is lightly cleaned up to dump some redundant or irrelevant fields, and then dumped into .csv files for subsequent processing.
 
-All images and metadata are then uploaded to a dedicated S3 bucket. The whole process is contained in the [scraper.py](./scraper.py) script.
+All images and metadata are then uploaded into a dedicated S3 bucket.
+The whole process is contained in the [scraper.py](./scraper.py) script, which is executed with a basic CLI syntax:
+
+```
+>> ./scraper.py -h
+
+usage: scraper.py [-h] -s STATION [--delay DELAY] [--limit LIMIT] [--tmpdir TMPDIR]
+                  [--quiet] destination
+
+positional arguments:
+  destination           Base path of destination. Files will be saved relative to this
+                        directory in subfolders named after each station.
+                        This value may point to an S3 endpoint with an 's3://' URI.
+                        Local directories will be created if they do not exist.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -s STATION, --station STATION
+                        Name of a camera station, e.g. Axis-Brightwood. Multiple station
+                        names may be specified, but at least one is required.
+                        All stations can be requested as "all".
+  --delay DELAY         Seconds between attempts to poll for new imagery.
+  --limit LIMIT         Maximum number of polling attempts.
+  --tmpdir TMPDIR       Local directory in which to store downloaded images before
+                        transferring them to the destination.
+  --quiet               Suppress (most) output
+ 
+Examples:
+  ./scraper.py -s Axis-Alpine -s Axis-Brightwood --delay 30 /home/user/AlertWF
+  
+  ./scraper.py -s all --delay 900 --quiet s3://my-bucket/AlertWildfire
+```
 
 ### Weather data
 
-It's possible to get data for the past 5 days with an unpaid [openweathermap.org](openweathermap.org) account, but getting data any further back costs money. I had been collecting data from the Axis-Brightwood site in Oregon for about a month before I decided to also log weather data, so I'm considering purchasing access to historical data for that one site farther back in time. It only costs \$10 per location, so if it appears that data will help my model I might go for it.
-Until then, I will continue gathering weather data from all the stations which I'm currently archiving.
+It's possible to get data for the past 5 days with an unpaid [openweathermap.org](openweathermap.org) account, but getting data any further back costs money. I had been collecting data from the Axis-Brightwood site in Oregon for about a month before I decided to also log weather data, so I'm considering purchasing access to historical data for that one site.
 
-Weather data retrieval is handled in the [getweather.ipynb](./getweather.ipynb) notebook, which has to be run at least once every five days.
-Once I get around to copy-pasting that code into its own script I can just have it automatically run once a day via cron.
+Weather data is retrieved by the [getweather.py](./getweather.py) script, which is run once per day as a `cron` process.
 
 ## Transform
 
