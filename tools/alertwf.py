@@ -1,18 +1,25 @@
 import requests, shutil
 from datetime import datetime
 import pandas as pd # type: ignore
+from typing import List, Dict, Any
 
-def get_all_cameras() -> object:
-    '''
-    Fetch metadata for all cameras.
-    '''
+def get_metadata() -> Dict[str, Any]:
     URL = 'https://s3-us-west-2.amazonaws.com/alertwildfire-data-public/all_cameras-v2.json'
     REF = 'https://www.alertwildfire.org'
 
     result = requests.get(URL, headers={'referer': REF, 'origin': REF, 'connection': 'keep-alive'})
     assert result.status_code == 200, ("Error requesting metadata: %d"%result.status_code)
+    return result.json()
 
-    data = result.json()
+def get_station_list() -> List[str]:
+    data = get_metadata()
+    return [station['properties']['id'] for station in data['features']]
+
+def get_all_cameras() -> object:
+    '''
+    Fetch metadata for all cameras.
+    '''
+    data = get_metadata()
     cameras = pd.json_normalize(data['features'])
     cameras.columns = [s.replace('properties.', '') for s in cameras.columns]
     cameras.set_index('id', inplace=True)

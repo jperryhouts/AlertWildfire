@@ -2,17 +2,20 @@
 
 import boto3 # type: ignore
 import io, json, os, shutil, subprocess, time
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 from tools.imgtools import get_exif, get_timestamp
-from tools.alertwf import get_all_cameras, get_latest_image
+from tools.alertwf import get_station_list, get_all_cameras, get_latest_image
 
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 
 class Scraper():
-    def __init__(self, stations: List[str], destdir: str, tmpdir='/tmp') -> None:
+    def __init__(self, stations: List[str], destdir: str, \
+                tmpdir: Optional[str]='/tmp', \
+                quiet: Optional[bool]=False) -> None:
         self.dest = destdir
         self.tmpdir = tmpdir
+        self.quiet = quiet
 
         self.save_to_s3 = self.dest.startswith('s3://')
         if self.save_to_s3:
@@ -41,14 +44,15 @@ class Scraper():
                     os.makedirs(dest)
                 assert os.path.isdir(dest)
 
-        print('Image path example:\n')
-        now = datetime.now().isoformat()
-        base = self.stations[stations[0]]['base']
-        if self.save_to_s3:
-            print(f"    s3://{self.bucket}/{self.basekey}/{base}/{base}_{now}.jpg")
-        else:
-            print(f"    {self.dest}/{base}/{base}_{now}.jpg")
-        print('\nProgress:\n')
+        if not self.quiet:
+            print('Image path example:\n')
+            now = datetime.now().isoformat()
+            base = self.stations[stations[0]]['base']
+            if self.save_to_s3:
+                print(f"    s3://{self.bucket}/{self.basekey}/{base}/{base}_{now}.jpg")
+            else:
+                print(f"    {self.dest}/{base}/{base}_{now}.jpg")
+            print('\nProgress:\n')
 
 
     def capture(self) -> List[str]:
@@ -68,7 +72,8 @@ class Scraper():
                 tmpsmall = os.path.join(self.tmpdir, f'small-{base}.jpg')
 
                 get_latest_image(name, tmpimg)
-                subprocess.call(['convert', tmpimg, '-resize', '@250000', tmpsmall])
+                subprocess.call(['convert', tmpimg, '-resize', '@250000', tmpsmall],
+                                stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 
                 exif = get_exif(tmpimg)
                 ts = get_timestamp(exif, method='exif')
@@ -116,20 +121,33 @@ class Scraper():
     def run(self, delay: float, limit: Optional[int]=None):
         i = 0
         while not os.path.exists('terminate'):
-            msgs = self.capture()
-            for msg in msgs:
-                term = 80
-                msg = ('  ' + msg).ljust(term)
-                if len(msg) > term:
-                    msg = msg[:term-3]+'...'
-                print(msg)
-            os.write(1, b"\x1b[%dF"%len(msgs))
-
             i += 1
+            msgs = self.capture()
+
+            if self.quiet:
+                now = datetime.now(tz=timezone(timedelta(hours=-7)))
+                next = now + timedelta(seconds=delay)
+                print('%05d'%i, 'Last:',now.ctime(), 'Next:', next.ctime(), end='\r')
+            else:
+                for msg in msgs:
+                    term = 80
+                    msg = ('  ' + msg).ljust(term)
+                    if len(msg) > term:
+                        msg = msg[:term-3]+'...'
+                    print(msg)
+                os.write(1, b"\x1b[%dF"%len(msgs))
+
             if limit is None or i < limit:
                 time.sleep(delay)
             else:
                 break
+
+        print('\n'*(0 if self.quiet else len(self.stations)))
+
+        if os.path.exists('terminate'):
+            print('Terminated upon request')
+            os.remove('terminate')
+
 
 if __name__ == '__main__':
     import pathlib
@@ -147,6 +165,7 @@ if __name__ == '__main__':
     parser.add_argument('--tmpdir', type=pathlib.Path, default='/tmp',
                         help=('Local directory in which to store downloaded images '
                             + 'before transferring them to the destination.'))
+    parser.add_argument('--quiet', action='store_true', help='Suppress (most) output')
     parser.add_argument('dest', metavar='destination',
                         help=('Base path of destination. Files will be saved '
                             + 'relative to this directory in subfolders named '
@@ -159,17 +178,23 @@ if __name__ == '__main__':
         dest = os.path.abspath(os.path.expanduser(args.dest))
 
     stations = list(sorted(args.station))
+    if 'all' in stations:
+        stations = get_station_list()
+
     tmpdir = args.tmpdir.absolute()
     delay = args.delay
     limit = args.limit
+    quiet = args.quiet
 
-    print(f'''
-    Scraping imagery for stations: {", ".join(stations)}
-    Polling every: {delay} seconds
-    Saving to base path: {dest}
-    ''')
+    if not quiet:
+        print(f'''
+        Scraping imagery for stations: {", ".join(stations)}
+        Polling every: {delay} seconds
+        Saving to base path: {dest}
+        '''.replace('        ','    '))
 
-    sc = Scraper(stations, dest, tmpdir)
+    sc = Scraper(stations, dest, tmpdir, quiet)
     sc.run(delay, limit)
-    print('\n'*len(stations))
-    print('Done')
+    if not quiet:
+        print('\n'*len(stations))
+        print('Done')
