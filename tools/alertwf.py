@@ -1,8 +1,8 @@
 import requests, shutil
 from datetime import datetime
-import pandas as pd
+import pandas as pd # type: ignore
 
-def get_all_cameras():
+def get_all_cameras() -> object:
     '''
     Fetch metadata for all cameras.
     '''
@@ -35,7 +35,7 @@ def get_all_cameras():
 
 #cameras = get_all_cameras()
 
-def get_latest_image(station_id, dest):
+def get_latest_image(station_id: str, dest: str) -> None:
     '''
     Download latest image from a station and dump it in
     its native jpg format directly to a file.

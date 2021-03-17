@@ -1,28 +1,26 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jan 26 10:33:54 2021
 
-@author: jmp
+"""
+Brute force method for scraping AlertWildfire imagery. Use a Selenium
+driver to load the webpage, then periodically screenshot the segment
+of the page where the imagery is displayed.
 
 ## Usage:
     while [ 1 == 1 ]; do ./scrape.py ~/Data/Storage/AlertWF/Brightwood/ ; done
 """
 
-import time
-import os
-import sys
+import os, sys, time
 from tempfile import NamedTemporaryFile
-from datetime import datetime as dt
+from datetime import datetime
 
 from PIL import Image
-from selenium import webdriver
+from selenium import webdriver # type: ignore
 
 
 URL = "http://www.alertwildfire.org/oregon/index.html?camera=Axis-Brightwood"
 
 
-def mktemp(suffix):
+def mktemp(suffix: str) -> str:
     with NamedTemporaryFile(suffix=suffix) as tmpf:
         tmpname = tmpf.name
     return tmpname
@@ -69,7 +67,7 @@ if __name__ == '__main__':
             if imgBytes != last_saved:
                 print("Saving screen capture")
                 last_saved = imgBytes
-                img.save(f"{outputdir}/Brightwood_{dt.now().isoformat()}.jpg")
+                img.save(f"{outputdir}/Brightwood_{datetime.now().isoformat()}.jpg")
             else:
                 print("Skipping save (image has not changed)")
             os.remove(tmpImgName)

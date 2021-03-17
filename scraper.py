@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 
-import boto3, io, json, os, shutil, subprocess, time
+import boto3 # type: ignore
+import io, json, os, shutil, subprocess, time
 from datetime import datetime
 
 from tools.imgtools import get_exif, get_timestamp
 from tools.alertwf import get_all_cameras, get_latest_image
 
+from typing import List, Dict, Any, Optional
+
 class Scraper():
-    def __init__(self, stations, destdir, tmpdir='/tmp'):
+    def __init__(self, stations: List[str], destdir: str, tmpdir='/tmp') -> None:
         self.dest = destdir
         self.tmpdir = tmpdir
 
@@ -48,7 +51,7 @@ class Scraper():
         print('\nProgress:\n')
 
 
-    def capture(self):
+    def capture(self) -> List[str]:
         metadata = get_all_cameras()
         metadata['latest'] = ''
         metadata['exif'] = ''
@@ -110,7 +113,7 @@ class Scraper():
 
         return msgs
 
-    def run(self, delay, limit=None):
+    def run(self, delay: float, limit: Optional[int]=None):
         i = 0
         while not os.path.exists('terminate'):
             msgs = self.capture()
