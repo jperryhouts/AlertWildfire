@@ -90,7 +90,7 @@ imsave('fname-entropy.jpg', img_entropy)
 
 ## Load
 
-Data is stored in a set of four SQL tables, arranged as follows:
+Data is divided into three SQL tables, arranged as follows:
 
 <table style='display:block; width: 100%'>
     <tr><th>Table</th><th>Columns</th></tr>
@@ -102,4 +102,20 @@ Data is stored in a set of four SQL tables, arranged as follows:
     </td></tr>
 </table>
 
-The complete database schema is described in [CreateDBTables.sql](CreateDBTables.sql).
+The complete schema is defined in [CreateDBTables.sql](CreateDBTables.sql).
+
+The stations table was populated once from the metadata described above.
+
+Imagery data is initially fetched with minimal processing applied, and information about new images is loaded to the database in batches, once per day.
+Loading imagery to the `images` table is handled by [load2db.py](./load2db.py), and is run once a day.
+
+## ETL Pipeline
+
+This whole process is orchestrated by the cron scheduler on my desktop using the following configuration:
+
+```cron
+# m     h   dom mon dow command
+*/30    *   *   *   *   /path/to/scraper.py -s all --limit 1 --quiet s3://my-bucket/AlertWildfire
+0       2   *   *   *   /path/to/load2db.py
+0       3   *   *   *   /path/to/getweather.py
+```

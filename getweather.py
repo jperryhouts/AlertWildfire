@@ -4,7 +4,7 @@
 Fetching weather data from openweathermap.org
 '''
 
-import json, os, requests, time
+import json, os, requests, sys, time
 import sqlalchemy # type: ignore
 from datetime import datetime, timedelta
 from urllib.parse import quote_plus
@@ -64,8 +64,10 @@ if __name__ == '__main__':
                 weather = get_hourly_weather(lon, lat, dt, api_key)
                 fname = f"{station}-{dt.strftime('%Y-%m-%d')}.json"
                 path = os.path.join(WEATHER_DIR, fname)
-                print('  Saving:', path)
+                if '-v' in sys.argv:
+                    print('  Saving:', path)
                 with open(path, 'w') as data_file:
                     json.dump(weather, data_file)
 
-    print('Done!')        
+    if '-v' in sys.argv:
+        print('Done!')

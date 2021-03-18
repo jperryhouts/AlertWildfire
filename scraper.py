@@ -9,7 +9,7 @@ from tools.alertwf import get_station_list, get_all_cameras, get_latest_image
 
 from typing import List, Optional
 
-class Scraper():
+class ImageScraper():
     def __init__(self, stations: List[str], destdir: str, \
                 tmpdir: Optional[str]='/tmp', \
                 quiet: Optional[bool]=False) -> None:
@@ -193,7 +193,7 @@ if __name__ == '__main__':
         Saving to base path: {dest}
         '''.replace('        ','    '))
 
-    sc = Scraper(stations, dest, tmpdir, quiet)
+    sc = ImageScraper(stations, dest, tmpdir, quiet)
     sc.run(delay, limit)
     if not quiet:
         print('\n'*len(stations))
