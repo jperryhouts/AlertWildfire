@@ -115,7 +115,7 @@ This whole process is orchestrated by the cron scheduler on my desktop using the
 
 ```cron
 # m     h   dom mon dow command
-*/30    *   *   *   *   /path/to/scraper.py -s all --limit 1 --quiet s3://my-bucket/AlertWildfire
+0      */6  *   *   *   /path/to/scraper.py -s all --limit 1 --quiet s3://my-bucket/AlertWildfire
 0       2   *   *   *   /path/to/load2db.py
 0       3   *   *   *   /path/to/getweather.py
 ```
