@@ -12,10 +12,11 @@ from typing import List, Optional
 class ImageScraper():
     def __init__(self, stations: List[str], destdir: str, \
                 tmpdir: Optional[str]='/tmp', \
-                quiet: Optional[bool]=False) -> None:
+                loglevel: Optional[str]='normal') -> None:
         self.dest = destdir
         self.tmpdir = tmpdir
-        self.quiet = quiet
+        self.quiet = loglevel in ('quiet','silent')
+        self.silent = loglevel == 'silent'
 
         self.save_to_s3 = self.dest.startswith('s3://')
         if self.save_to_s3:
@@ -124,25 +125,27 @@ class ImageScraper():
             i += 1
             msgs = self.capture()
 
-            if self.quiet:
-                now = datetime.now(tz=timezone(timedelta(hours=-7)))
-                next = now + timedelta(seconds=delay)
-                print('%05d'%i, 'Last:',now.ctime(), 'Next:', next.ctime(), end='\r')
-            else:
-                for msg in msgs:
-                    term = 80
-                    msg = ('  ' + msg).ljust(term)
-                    if len(msg) > term:
-                        msg = msg[:term-3]+'...'
-                    print(msg)
-                os.write(1, b"\x1b[%dF"%len(msgs))
+            if not self.silent:
+                if self.quiet:
+                    now = datetime.now(tz=timezone(timedelta(hours=-7)))
+                    next = now + timedelta(seconds=delay)
+                    print('%05d'%i, 'Last:',now.ctime(), 'Next:', next.ctime(), end='\r')
+                else:
+                    for msg in msgs:
+                        term = 80
+                        msg = ('  ' + msg).ljust(term)
+                        if len(msg) > term:
+                            msg = msg[:term-3]+'...'
+                        print(msg)
+                    os.write(1, b"\x1b[%dF"%len(msgs))
 
             if limit is None or i < limit:
                 time.sleep(delay)
             else:
                 break
 
-        print('\n'*(0 if self.quiet else len(self.stations)))
+        if not self.silent:
+            print('\n'*(0 if self.quiet else len(self.stations)))
 
         if os.path.exists('terminate'):
             print('Terminated upon request')
@@ -166,6 +169,7 @@ if __name__ == '__main__':
                         help=('Local directory in which to store downloaded images '
                             + 'before transferring them to the destination.'))
     parser.add_argument('--quiet', action='store_true', help='Suppress (most) output')
+    parser.add_argument('--silent', action='store_true', help='Suppress all output')
     parser.add_argument('dest', metavar='destination',
                         help=('Base path of destination. Files will be saved '
                             + 'relative to this directory in subfolders named '
@@ -184,17 +188,23 @@ if __name__ == '__main__':
     tmpdir = args.tmpdir.absolute()
     delay = args.delay
     limit = args.limit
-    quiet = args.quiet
 
-    if not quiet:
+    loglevel = 'normal'
+    if args.quiet:
+        loglevel = 'quiet'
+
+    if args.silent:
+        loglevel = 'silent'
+
+    if loglevel == 'normal':
         print(f'''
         Scraping imagery for stations: {", ".join(stations)}
         Polling every: {delay} seconds
         Saving to base path: {dest}
         '''.replace('        ','    '))
 
-    sc = ImageScraper(stations, dest, tmpdir, quiet)
+    sc = ImageScraper(stations, dest, tmpdir, loglevel)
     sc.run(delay, limit)
-    if not quiet:
+    if loglevel == 'normal':
         print('\n'*len(stations))
         print('Done')
