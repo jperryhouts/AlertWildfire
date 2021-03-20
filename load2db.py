@@ -15,13 +15,17 @@ Run it from the command line with no arguments. It'll
 do its thing.
 '''
 
-## Some constants
-BUCKET_NAME = 'storage-9iudgkuqwurq6'
-PREFIX = 'AlertWF'
-
-import boto3, re
+import boto3, json, os, re
 from datetime import datetime
 from tools.db_util import get_sql_engine, SQL
+
+HOME = os.path.expanduser('~')
+secrets_path = os.path.join(HOME, 'Documents', 'secrets.json')
+with open(secrets_path,'r') as secrets_file:
+    secrets = json.load(secrets_file)
+    BUCKET_NAME = secrets['aws']['bucket']
+    PREFIX = secrets['aws']['prefix']
+
 s3_resource = boto3.resource('s3')
 
 def do_load(Bucket:str, Prefix:str) -> None:

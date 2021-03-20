@@ -80,7 +80,10 @@ class ImageScraper():
                 ts = get_timestamp(exif, method='exif')
                 if ts > st['last']:
                     fname = f"{base}_{ts.isoformat()}.jpg"
-                    fnamesmall = f"{base}_{ts.isoformat()}-small.jpg"
+                    ## Format for resized image was originally:
+                    ## "{base}_{ts.isoformat()}-small.jpg"
+                    ## New format makes filtering S3 objects easier
+                    fnamesmall = f"small-{base}_{ts.isoformat()}.jpg"
                     if self.save_to_s3:
                         with open(tmpimg,'rb') as src:
                             key = f"{self.basekey}/{base}/{fname}"

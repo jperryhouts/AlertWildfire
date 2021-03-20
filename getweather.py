@@ -61,13 +61,17 @@ if __name__ == '__main__':
             #for n in range(5):
             for n in [1]:
                 dt = days_ago(n)
-                weather = get_hourly_weather(lon, lat, dt, api_key)
                 fname = f"{station}-{dt.strftime('%Y-%m-%d')}.json"
                 path = os.path.join(WEATHER_DIR, fname)
-                if '-v' in sys.argv:
-                    print('  Saving:', path)
-                with open(path, 'w') as data_file:
-                    json.dump(weather, data_file)
+                if not os.path.exists(path):
+                    try:
+                        weather = get_hourly_weather(lon, lat, dt, api_key)
+                        if '-v' in sys.argv:
+                            print('  Saving:', path)
+                        with open(path, 'w') as data_file:
+                            json.dump(weather, data_file)
+                    except Exception as e:
+                        print('Error saving',path,str(e))
 
     if '-v' in sys.argv:
         print('Done!')
