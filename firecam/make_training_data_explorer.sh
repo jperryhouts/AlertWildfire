@@ -13,7 +13,7 @@ for dataset in non_smoke smoke_cropped; do
     DEST="training/${dataset}.html"
     mkdir -p "$(dirname "$DEST")"
 
-    s3cmd sync --guess-mime-type --no-mime-magic --delete-removed --acl-public "$SRC" "$BUCKET"
+    #s3cmd sync --guess-mime-type --no-mime-magic --delete-removed --acl-public "$SRC" "$BUCKET"
     
     echo '.row { width:100%; display:block;
                  margin-left:auto; margin-right:auto; }
@@ -22,12 +22,12 @@ for dataset in non_smoke smoke_cropped; do
     echo '<html><head><link rel="stylesheet" href="style.css"></head><body>' > "$DEST"
 
     script=""
-    if [ dataset == "smoke_cropped" ]; then
+    if [ "$dataset" == "smoke_cropped" ]; then
         script+='{ if((NR-1)%10 == 0) print("<div class=\"row\">") };' ; fi
 
     script+='{printf("<img src=\"https://storage-9iudgkuqwurq6.s3-us-west-2.amazonaws.com/firecam/'${dataset}'/%s\" />\n",$1)};'
 
-    if [ dataset == "smoke_cropped" ]; then
+    if [ "$dataset" == "smoke_cropped" ]; then
         script+='{ if((NR-1)%10==9) print("</div>") }' ; fi
 
     find "$SRC" -type f -iname '*.jpg' | sed -e 's!.*/\([^/]*\.jpg\)$!\1!' \
