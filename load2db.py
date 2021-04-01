@@ -52,9 +52,10 @@ def do_load(Bucket:str, Prefix:str) -> None:
             if ('small' in obj.key) or (obj.key in img_paths):
                 continue
             match = regex_path.search(obj.key)
-            if match:
+            stamp_match = regex_date.search(fname)
+            if match and stamp_match:
                 station, fname = match.groups()
-                stamp = regex_date.search(fname).groups()[0]
+                stamp = stamp_match.groups()[0]
 
                 dtstamp = datetime.fromisoformat(stamp)
                 stationid = f'Axis-{station}'
