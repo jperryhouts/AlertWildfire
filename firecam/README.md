@@ -1,4 +1,4 @@
-## FireCam
+# FireCam
 
 Data for this section was collected from the [HPWREN](https://hpwren.ucsd.edu/) fire lookout network. Images were collected and tagged by [Open Climate Tech](https://openclimatetech.org/), and published as a supplement to [Govil et al, 2020](https://doi.org/10.3390/rs12010166 "Govil, K.; Welch, M.L.; Ball, J.T.; Pennypacker, C.R. Preliminary Results from a Wildfire Detection System Using Deep Learning on Remote Camera Images. Remote Sens. 2020, 12, 166."). Part of the dataset is archived with the [FireCam project](https://github.com/open-climate-tech/firecam/tree/master/datasets/2019a).
 
@@ -18,3 +18,7 @@ The notebook [firecam.ipynb](./firecam.ipynb) handles the pre-processing steps d
 It first extracts those cropped/shifted/mirrored segments of the positive training examples, and saves them into a new directory. It then uses the [make_training_data_eplorer.sh](./make_training_data_explorer.sh) script to generate browsable HTML pages for verifying that the preprocessing steps were executed correctly.
 
 The preprocessed data can be viewed in [training/non_smoke.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/jperryhouts/AlertWildfire/main/firecam/training/non_smoke.html) and [training/smoke_cropped.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/jperryhouts/AlertWildfire/main/firecam/training/smoke_cropped.html).
+
+## EDA
+
+One thing that stands out to me in this dataset is how similar many of the training examples are. Considering it's ridiculously easy to get non-smoke negative example imagery, it might be worth doing some sort of clustering analysis on the negative examples to prune down the number of near-duplicate examples and replace them with more varied example imagery.
