@@ -20,9 +20,17 @@ for dataset in non_smoke smoke_cropped; do
           .row > img { width: 9.5%; }' > "$(dirname "$DEST")/style.css"
 
     echo '<html><head><link rel="stylesheet" href="style.css"></head><body>' > "$DEST"
-    find "$SRC" -type f -iname '*.jpg' | jq -R -r @uri | awk '
-        { if((NR-1)%10 == 0) print("<div class=\"row\">") };
-        { printf("<img src=\"https://storage-9iudgkuqwurq6.s3-us-west-2.amazonaws.com/firecam/%s\" />\n",$1) };
-        { if((NR-1)%10==9) print("</div>") }' >> "$DEST"
+
+    script=""
+    if [ dataset == "smoke_cropped" ]; then
+        script+='{ if((NR-1)%10 == 0) print("<div class=\"row\">") };' ; fi
+
+    script+='{printf("<img src=\"https://storage-9iudgkuqwurq6.s3-us-west-2.amazonaws.com/firecam/'${dataset}'/%s\" />\n",$1)};'
+
+    if [ dataset == "smoke_cropped" ]; then
+        script+='{ if((NR-1)%10==9) print("</div>") }' ; fi
+
+    find "$SRC" -type f -iname '*.jpg' | sed -e 's!.*/\([^/]*\.jpg\)$!\1!' \
+        | jq -R -r @uri | awk "$script" >> "$DEST"
     echo '</body></html>' >> "$DEST"
 done
