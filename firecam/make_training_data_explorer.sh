@@ -13,13 +13,12 @@ for dataset in non_smoke smoke_cropped; do
     DEST="training/${dataset}.html"
     mkdir -p "$(dirname "$DEST")"
 
-    #s3cmd sync --guess-mime-type --no-mime-magic --delete-removed --acl-public "$SRC" "$BUCKET"
+    s3cmd sync --guess-mime-type --no-mime-magic --delete-removed --acl-public "$SRC" "$BUCKET"
     
-    echo '.row { width:100%; display:block;
-                 margin-left:auto; margin-right:auto; }
-          .row > img { width: 9.5%; }' > "$(dirname "$DEST")/style.css"
-
-    echo '<html><head><link rel="stylesheet" href="style.css"></head><body>' > "$DEST"
+    echo '<html><head><style>' > "$DEST"
+    echo '  .row { width:100%; display:block; margin-left:auto; margin-right:auto; }' >> "$DEST"
+    echo '  .row > img { width: 9.5%; }' >> "$DEST"
+    echo '</style></head><body>' >> "$DEST"
 
     script=""
     if [ "$dataset" == "smoke_cropped" ]; then
@@ -32,5 +31,6 @@ for dataset in non_smoke smoke_cropped; do
 
     find "$SRC" -type f -iname '*.jpg' | sed -e 's!.*/\([^/]*\.jpg\)$!\1!' \
         | jq -R -r @uri | awk "$script" >> "$DEST"
+
     echo '</body></html>' >> "$DEST"
 done
