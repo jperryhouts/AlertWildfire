@@ -17,4 +17,4 @@ Because there are many more negative examples than positive examples, each posit
 The notebook [firecam.ipynb](./firecam.ipynb) handles the pre-processing steps described above.
 It first extracts those cropped/shifted/mirrored segments of the positive training examples, and saves them into a new directory. It then uses the [make_training_data_eplorer.sh](./make_training_data_explorer.sh) script to generate browsable HTML pages for verifying that the preprocessing steps were executed correctly.
 
-The preprocessed data can be viewed in [training/non_smoke.html](./training/non_smoke.html) and [training/smoke_cropped.html](./training/smoke_cropped.html).
+The preprocessed data can be viewed in [training/non_smoke.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/jperryhouts/AlertWildfire/main/firecam/training/non_smoke.html) and [training/smoke_cropped.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/jperryhouts/AlertWildfire/main/firecam/training/smoke_cropped.html).
